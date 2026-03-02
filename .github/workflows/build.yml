@@ -1,0 +1,49 @@
+name: Build OpenClaw
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      openclaw_ref:
+        description: "openclaw/openclaw branch, tag, or SHA to build"
+        required: false
+        default: "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out openclaw source
+        uses: actions/checkout@v4
+        with:
+          repository: openclaw/openclaw
+          ref: ${{ github.event.inputs.openclaw_ref || 'main' }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Enable corepack and install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openclaw-dist
+          path: |
+            dist/
+            openclaw.mjs
+          retention-days: 7
