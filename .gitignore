@@ -1,0 +1,7 @@
+.env
+config/
+workspace/
+openclaw/
+node_modules/
+dist/
+*.log
